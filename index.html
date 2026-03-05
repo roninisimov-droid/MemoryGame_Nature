@@ -7,22 +7,30 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --card-size: clamp(52px, calc((100vw - 70px) / 5), 85px);
+      --gap: clamp(6px, 1.8vw, 10px);
+      --emoji-size: calc(var(--card-size) * 0.52);
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, sans-serif;
       background: linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #40916c 100%);
       min-height: 100vh;
+      min-height: -webkit-fill-available;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
+      padding: clamp(12px, 3vw, 20px);
       color: #fff;
     }
 
     h1 {
-      font-size: 2rem;
+      font-size: clamp(1.2rem, 5vw, 2rem);
       text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
-      margin-bottom: 20px;
+      margin-bottom: clamp(12px, 3vw, 20px);
       letter-spacing: 2px;
+      text-align: center;
     }
 
     /* ── START SCREEN ── */
@@ -30,31 +38,30 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 22px;
+      gap: clamp(14px, 4vw, 22px);
       background: rgba(0,0,0,0.25);
-      padding: 36px 48px;
+      padding: clamp(20px, 5vw, 36px) clamp(18px, 6vw, 48px);
       border-radius: 20px;
       box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      width: min(92vw, 420px);
     }
 
-    #start-screen h2 { font-size: 1.4rem; }
+    #start-screen h2 { font-size: clamp(1.1rem, 4vw, 1.4rem); }
 
-    .player-count-btns {
-      display: flex;
-      gap: 14px;
-    }
+    .player-count-btns { display: flex; gap: clamp(10px, 3vw, 14px); }
 
     .pc-btn {
-      width: 60px;
-      height: 60px;
+      width: clamp(50px, 13vw, 60px);
+      height: clamp(50px, 13vw, 60px);
       border-radius: 50%;
       border: 2px solid rgba(255,255,255,0.5);
       background: rgba(255,255,255,0.1);
       color: #fff;
-      font-size: 1.5rem;
+      font-size: clamp(1.2rem, 4vw, 1.5rem);
       font-weight: bold;
       cursor: pointer;
       transition: all 0.2s;
+      touch-action: manipulation;
     }
 
     .pc-btn:hover, .pc-btn.selected {
@@ -63,37 +70,37 @@
       transform: scale(1.1);
     }
 
-    .cat-label { font-size: 1.1rem; }
+    .cat-label { font-size: clamp(0.95rem, 3.5vw, 1.1rem); }
 
     .category-bar {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
       justify-content: center;
     }
 
     .cat-btn {
-      padding: 8px 18px;
+      padding: 8px 14px;
       border: 2px solid rgba(255,255,255,0.5);
       border-radius: 25px;
       background: rgba(255,255,255,0.1);
       color: #fff;
       cursor: pointer;
-      font-size: 0.95rem;
+      font-size: clamp(0.82rem, 3vw, 0.95rem);
       transition: all 0.2s;
+      touch-action: manipulation;
     }
 
     .cat-btn:hover, .cat-btn.active {
       background: rgba(255,255,255,0.3);
       border-color: #fff;
-      transform: scale(1.05);
     }
 
     .cat-btn.active { font-weight: bold; }
 
     #start-btn {
-      padding: 12px 36px;
-      font-size: 1.2rem;
+      padding: 12px 32px;
+      font-size: clamp(1rem, 3.5vw, 1.2rem);
       border: none;
       border-radius: 25px;
       background: #52b788;
@@ -103,28 +110,32 @@
       transition: background 0.2s, transform 0.1s;
       opacity: 0.4;
       pointer-events: none;
+      touch-action: manipulation;
+      width: 100%;
     }
 
     #start-btn.ready { opacity: 1; pointer-events: auto; }
-    #start-btn.ready:hover { background: #40916c; transform: scale(1.04); }
+    #start-btn.ready:hover { background: #40916c; }
+    #start-btn.ready:active { transform: scale(0.97); }
 
     /* ── GAME SCREEN ── */
-    #game-screen { display: none; flex-direction: column; align-items: center; gap: 14px; }
+    #game-screen { display: none; flex-direction: column; align-items: center; gap: clamp(8px, 2vw, 14px); }
 
     .players-bar {
       display: flex;
-      gap: 12px;
+      gap: clamp(6px, 2vw, 12px);
       flex-wrap: wrap;
       justify-content: center;
+      width: 100%;
     }
 
     .player-card {
-      padding: 10px 20px;
+      padding: clamp(6px, 2vw, 10px) clamp(10px, 3vw, 20px);
       border-radius: 14px;
       background: rgba(0,0,0,0.25);
       border: 2px solid transparent;
       text-align: center;
-      min-width: 90px;
+      min-width: clamp(70px, 18vw, 90px);
       transition: all 0.3s;
     }
 
@@ -135,36 +146,39 @@
       box-shadow: 0 0 18px rgba(255,209,102,0.4);
     }
 
-    .player-card .p-name { font-size: 0.9rem; opacity: 0.8; }
-    .player-card .p-score { font-size: 1.6rem; font-weight: bold; color: #b7e4c7; }
+    .player-card .p-name { font-size: clamp(0.75rem, 2.5vw, 0.9rem); opacity: 0.8; }
+    .player-card .p-score { font-size: clamp(1.3rem, 4vw, 1.6rem); font-weight: bold; color: #b7e4c7; }
     .player-card.active .p-score { color: #ffd166; }
 
     .turn-msg {
-      font-size: 1.1rem;
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
       background: rgba(0,0,0,0.2);
-      padding: 6px 20px;
+      padding: 6px 18px;
       border-radius: 20px;
     }
 
     .stats {
-      font-size: 1rem;
+      font-size: clamp(0.82rem, 2.8vw, 1rem);
       background: rgba(0,0,0,0.2);
-      padding: 6px 20px;
+      padding: 6px 18px;
       border-radius: 20px;
     }
 
     .stats span { font-weight: bold; color: #b7e4c7; }
 
+    /* ── GRID & CARDS ── */
     #grid {
       display: grid;
-      gap: 10px;
+      grid-template-columns: repeat(5, var(--card-size));
+      gap: var(--gap);
     }
 
     .card {
-      width: 85px;
-      height: 85px;
+      width: var(--card-size);
+      height: var(--card-size);
       perspective: 600px;
       cursor: pointer;
+      touch-action: manipulation;
     }
 
     .card-inner {
@@ -183,17 +197,17 @@
       width: 100%;
       height: 100%;
       backface-visibility: hidden;
-      border-radius: 12px;
+      border-radius: clamp(8px, 2vw, 12px);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
     }
 
     .card-front {
       background: linear-gradient(135deg, #74c69d, #52b788);
       border: 2px solid rgba(255,255,255,0.3);
-      font-size: 2.2rem;
+      font-size: var(--emoji-size);
     }
 
     .card-front::after {
@@ -205,7 +219,7 @@
       background: linear-gradient(135deg, #fff8e1, #fff3cd);
       transform: rotateY(180deg);
       border: 2px solid rgba(255,200,50,0.4);
-      font-size: 2.4rem;
+      font-size: var(--emoji-size);
     }
 
     .card.matched .card-back {
@@ -221,15 +235,15 @@
     }
 
     #message {
-      font-size: 1.3rem;
+      font-size: clamp(1rem, 3.5vw, 1.3rem);
       text-align: center;
-      min-height: 2rem;
+      min-height: 1.8rem;
       text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
     }
 
     #reset-btn {
-      padding: 10px 28px;
-      font-size: 1rem;
+      padding: 10px 26px;
+      font-size: clamp(0.9rem, 3vw, 1rem);
       border: none;
       border-radius: 25px;
       background: #52b788;
@@ -237,24 +251,28 @@
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       transition: background 0.2s, transform 0.1s;
+      touch-action: manipulation;
     }
 
-    #reset-btn:hover { background: #40916c; transform: scale(1.04); }
+    #reset-btn:hover { background: #40916c; }
+    #reset-btn:active { transform: scale(0.97); }
 
     /* ── WIN SCREEN ── */
     #win-screen {
       display: none;
       flex-direction: column;
       align-items: center;
-      gap: 18px;
+      gap: clamp(14px, 4vw, 18px);
       background: rgba(0,0,0,0.3);
-      padding: 36px 48px;
+      padding: clamp(20px, 5vw, 36px) clamp(18px, 6vw, 48px);
       border-radius: 20px;
       box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      width: min(92vw, 420px);
     }
 
     .win-title {
-      font-size: 2.2rem;
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      text-align: center;
       animation: winAnim 0.7s ease infinite alternate;
     }
 
@@ -265,17 +283,17 @@
 
     .final-scores {
       display: flex;
-      gap: 14px;
+      gap: 10px;
       flex-wrap: wrap;
       justify-content: center;
     }
 
     .final-player {
-      padding: 14px 22px;
+      padding: 12px 18px;
       border-radius: 14px;
       background: rgba(255,255,255,0.1);
       text-align: center;
-      min-width: 100px;
+      min-width: clamp(80px, 22vw, 100px);
       border: 2px solid transparent;
     }
 
@@ -284,14 +302,14 @@
       background: rgba(255,209,102,0.2);
     }
 
-    .final-player .fp-name { font-size: 0.95rem; opacity: 0.8; }
-    .final-player .fp-score { font-size: 2rem; font-weight: bold; color: #b7e4c7; }
+    .final-player .fp-name { font-size: clamp(0.8rem, 2.8vw, 0.95rem); opacity: 0.8; }
+    .final-player .fp-score { font-size: clamp(1.6rem, 5vw, 2rem); font-weight: bold; color: #b7e4c7; }
     .final-player.winner .fp-score { color: #ffd166; }
-    .final-player .fp-crown { font-size: 1.4rem; }
+    .final-player .fp-crown { font-size: clamp(1.1rem, 3.5vw, 1.4rem); }
 
     #play-again-btn {
-      padding: 12px 36px;
-      font-size: 1.1rem;
+      padding: 12px 32px;
+      font-size: clamp(1rem, 3.5vw, 1.1rem);
       border: none;
       border-radius: 25px;
       background: #52b788;
@@ -299,9 +317,12 @@
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       transition: background 0.2s, transform 0.1s;
+      touch-action: manipulation;
+      width: 100%;
     }
 
-    #play-again-btn:hover { background: #40916c; transform: scale(1.04); }
+    #play-again-btn:hover { background: #40916c; }
+    #play-again-btn:active { transform: scale(0.97); }
   </style>
 </head>
 <body>
@@ -333,7 +354,7 @@
 <div id="game-screen">
   <div class="players-bar" id="players-bar"></div>
   <div class="turn-msg" id="turn-msg"></div>
-  <div class="stats">מהלכים: <span id="moves">0</span> &nbsp;|&nbsp; זוגות שנמצאו: <span id="pairs">0</span>/10</div>
+  <div class="stats">מהלכים: <span id="moves">0</span> &nbsp;|&nbsp; זוגות: <span id="pairs">0</span>/10</div>
   <div id="grid"></div>
   <div id="message"></div>
   <button id="reset-btn">🔄 התחל מחדש</button>
@@ -434,7 +455,6 @@
     document.getElementById('game-screen').style.display = 'none';
     document.getElementById('win-screen').style.display = 'none';
     document.getElementById('start-screen').style.display = 'flex';
-    // reset selection
     numPlayers = 0;
     document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
     document.getElementById('start-btn').classList.remove('ready');
@@ -474,7 +494,7 @@
     document.getElementById('message').textContent = '';
 
     const pool = shuffle(getPool(currentCat));
-    const picked = pool.slice(0, 10); // 10 pairs = 20 cards
+    const picked = pool.slice(0, 10);
     gameCards = shuffle([...picked, ...picked.map(c => ({ ...c }))]);
 
     renderPlayersBar();
@@ -515,9 +535,7 @@
 
   function renderGrid() {
     const grid = document.getElementById('grid');
-    grid.style.gridTemplateColumns = 'repeat(5, 85px)';
     grid.innerHTML = '';
-
     gameCards.forEach((card, idx) => {
       const el = document.createElement('div');
       el.className = 'card';
@@ -568,7 +586,6 @@
       if (matched.length === gameCards.length) {
         setTimeout(showWinScreen, 500);
       } else {
-        // same player continues on match
         document.getElementById('message').textContent = '✅ כל הכבוד! המשך!';
         setTimeout(() => { document.getElementById('message').textContent = ''; }, 1000);
       }
@@ -578,8 +595,6 @@
           .forEach(el => el.classList.remove('flipped'));
         flipped = [];
         locked = false;
-
-        // next player on miss
         currentPlayer = (currentPlayer + 1) % numPlayers;
         highlightCurrentPlayer();
       }, 900);
@@ -606,7 +621,6 @@
       fs.appendChild(div);
     });
 
-    // If single player, add moves info
     if (numPlayers === 1) {
       const info = document.createElement('div');
       info.style.cssText = 'text-align:center;font-size:1rem;opacity:0.8;';
