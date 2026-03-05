@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>משחק זיכרון טבע</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #40916c 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: 2rem;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+
+    /* ── START SCREEN ── */
+    #start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+      background: rgba(0,0,0,0.25);
+      padding: 36px 48px;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    #start-screen h2 { font-size: 1.4rem; }
+
+    .player-count-btns {
+      display: flex;
+      gap: 14px;
+    }
+
+    .pc-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 1.5rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pc-btn:hover, .pc-btn.selected {
+      background: #52b788;
+      border-color: #52b788;
+      transform: scale(1.1);
+    }
+
+    .cat-label { font-size: 1.1rem; }
+
+    .category-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .cat-btn {
+      padding: 8px 18px;
+      border: 2px solid rgba(255,255,255,0.5);
+      border-radius: 25px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .cat-btn:hover, .cat-btn.active {
+      background: rgba(255,255,255,0.3);
+      border-color: #fff;
+      transform: scale(1.05);
+    }
+
+    .cat-btn.active { font-weight: bold; }
+
+    #start-btn {
+      padding: 12px 36px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 25px;
+      background: #52b788;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: background 0.2s, transform 0.1s;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    #start-btn.ready { opacity: 1; pointer-events: auto; }
+    #start-btn.ready:hover { background: #40916c; transform: scale(1.04); }
+
+    /* ── GAME SCREEN ── */
+    #game-screen { display: none; flex-direction: column; align-items: center; gap: 14px; }
+
+    .players-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .player-card {
+      padding: 10px 20px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.25);
+      border: 2px solid transparent;
+      text-align: center;
+      min-width: 90px;
+      transition: all 0.3s;
+    }
+
+    .player-card.active {
+      border-color: #ffd166;
+      background: rgba(255,209,102,0.2);
+      transform: scale(1.08);
+      box-shadow: 0 0 18px rgba(255,209,102,0.4);
+    }
+
+    .player-card .p-name { font-size: 0.9rem; opacity: 0.8; }
+    .player-card .p-score { font-size: 1.6rem; font-weight: bold; color: #b7e4c7; }
+    .player-card.active .p-score { color: #ffd166; }
+
+    .turn-msg {
+      font-size: 1.1rem;
+      background: rgba(0,0,0,0.2);
+      padding: 6px 20px;
+      border-radius: 20px;
+    }
+
+    .stats {
+      font-size: 1rem;
+      background: rgba(0,0,0,0.2);
+      padding: 6px 20px;
+      border-radius: 20px;
+    }
+
+    .stats span { font-weight: bold; color: #b7e4c7; }
+
+    #grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .card {
+      width: 85px;
+      height: 85px;
+      perspective: 600px;
+      cursor: pointer;
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.45s ease;
+    }
+
+    .card.flipped .card-inner,
+    .card.matched .card-inner { transform: rotateY(180deg); }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+
+    .card-front {
+      background: linear-gradient(135deg, #74c69d, #52b788);
+      border: 2px solid rgba(255,255,255,0.3);
+      font-size: 2.2rem;
+    }
+
+    .card-front::after {
+      content: '🍃';
+      filter: opacity(0.3);
+    }
+
+    .card-back {
+      background: linear-gradient(135deg, #fff8e1, #fff3cd);
+      transform: rotateY(180deg);
+      border: 2px solid rgba(255,200,50,0.4);
+      font-size: 2.4rem;
+    }
+
+    .card.matched .card-back {
+      background: linear-gradient(135deg, #d4edda, #c3e6cb);
+      border-color: #5cb85c;
+      animation: matchPulse 0.4s ease;
+    }
+
+    @keyframes matchPulse {
+      0%   { transform: rotateY(180deg) scale(1); }
+      50%  { transform: rotateY(180deg) scale(1.12); }
+      100% { transform: rotateY(180deg) scale(1); }
+    }
+
+    #message {
+      font-size: 1.3rem;
+      text-align: center;
+      min-height: 2rem;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    }
+
+    #reset-btn {
+      padding: 10px 28px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 25px;
+      background: #52b788;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    #reset-btn:hover { background: #40916c; transform: scale(1.04); }
+
+    /* ── WIN SCREEN ── */
+    #win-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      background: rgba(0,0,0,0.3);
+      padding: 36px 48px;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    }
+
+    .win-title {
+      font-size: 2.2rem;
+      animation: winAnim 0.7s ease infinite alternate;
+    }
+
+    @keyframes winAnim {
+      from { transform: scale(1); }
+      to   { transform: scale(1.06); }
+    }
+
+    .final-scores {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .final-player {
+      padding: 14px 22px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.1);
+      text-align: center;
+      min-width: 100px;
+      border: 2px solid transparent;
+    }
+
+    .final-player.winner {
+      border-color: #ffd166;
+      background: rgba(255,209,102,0.2);
+    }
+
+    .final-player .fp-name { font-size: 0.95rem; opacity: 0.8; }
+    .final-player .fp-score { font-size: 2rem; font-weight: bold; color: #b7e4c7; }
+    .final-player.winner .fp-score { color: #ffd166; }
+    .final-player .fp-crown { font-size: 1.4rem; }
+
+    #play-again-btn {
+      padding: 12px 36px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 25px;
+      background: #52b788;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    #play-again-btn:hover { background: #40916c; transform: scale(1.04); }
+  </style>
+</head>
+<body>
+
+<h1>🌿 משחק זיכרון טבע 🌿</h1>
+
+<!-- START SCREEN -->
+<div id="start-screen">
+  <h2>כמה שחקנים משחקים?</h2>
+  <div class="player-count-btns">
+    <button class="pc-btn" data-n="1">1</button>
+    <button class="pc-btn" data-n="2">2</button>
+    <button class="pc-btn" data-n="3">3</button>
+    <button class="pc-btn" data-n="4">4</button>
+  </div>
+
+  <div class="cat-label">בחר נושא:</div>
+  <div class="category-bar">
+    <button class="cat-btn active" data-cat="all">הכל</button>
+    <button class="cat-btn" data-cat="plants">צמחים 🌸</button>
+    <button class="cat-btn" data-cat="birds">ציפורים 🦜</button>
+    <button class="cat-btn" data-cat="nature">טבע 🌊</button>
+  </div>
+
+  <button id="start-btn">התחל משחק 🌱</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen">
+  <div class="players-bar" id="players-bar"></div>
+  <div class="turn-msg" id="turn-msg"></div>
+  <div class="stats">מהלכים: <span id="moves">0</span> &nbsp;|&nbsp; זוגות שנמצאו: <span id="pairs">0</span>/10</div>
+  <div id="grid"></div>
+  <div id="message"></div>
+  <button id="reset-btn">🔄 התחל מחדש</button>
+</div>
+
+<!-- WIN SCREEN -->
+<div id="win-screen">
+  <div class="win-title">🎉 המשחק נגמר! 🎉</div>
+  <div class="final-scores" id="final-scores"></div>
+  <button id="play-again-btn">🌱 שחק שוב</button>
+</div>
+
+<script>
+  const CARDS = {
+    plants: [
+      { emoji: '🌸', name: 'פרח' },
+      { emoji: '🌺', name: 'היביסקוס' },
+      { emoji: '🌻', name: 'חמנייה' },
+      { emoji: '🌹', name: 'ורד' },
+      { emoji: '🌷', name: 'צבעוני' },
+      { emoji: '🍀', name: 'תלתן' },
+      { emoji: '🌵', name: 'קקטוס' },
+      { emoji: '🌴', name: 'דקל' },
+      { emoji: '🍁', name: 'עלה מייפל' },
+      { emoji: '🍄', name: 'פטרייה' },
+      { emoji: '🌿', name: 'ענף' },
+      { emoji: '🌱', name: 'נבט' },
+    ],
+    birds: [
+      { emoji: '🦜', name: 'תוכי' },
+      { emoji: '🦅', name: 'נשר' },
+      { emoji: '🦆', name: 'ברווז' },
+      { emoji: '🦉', name: 'ינשוף' },
+      { emoji: '🦚', name: 'טווס' },
+      { emoji: '🦩', name: 'פלמינגו' },
+      { emoji: '🦢', name: 'ברבור' },
+      { emoji: '🐦', name: 'ציפור' },
+      { emoji: '🦤', name: 'דודו' },
+      { emoji: '🦃', name: 'תרנגול הודו' },
+      { emoji: '🦋', name: 'פרפר' },
+      { emoji: '🐧', name: 'פינגווין' },
+    ],
+    nature: [
+      { emoji: '🌊', name: 'גל' },
+      { emoji: '🌋', name: 'הר געש' },
+      { emoji: '🏔️', name: 'הר' },
+      { emoji: '🌈', name: 'קשת' },
+      { emoji: '⭐', name: 'כוכב' },
+      { emoji: '🌙', name: 'ירח' },
+      { emoji: '🐚', name: 'צדף' },
+      { emoji: '🌍', name: 'כדור הארץ' },
+      { emoji: '🌞', name: 'שמש' },
+      { emoji: '❄️', name: 'שלג' },
+      { emoji: '🌪️', name: 'סופה' },
+      { emoji: '🌠', name: 'כוכב נופל' },
+    ],
+  };
+
+  const PLAYER_COLORS = ['🔵', '🔴', '🟢', '🟡'];
+  const PLAYER_NAMES  = ['שחקן 1', 'שחקן 2', 'שחקן 3', 'שחקן 4'];
+
+  let numPlayers = 0;
+  let currentCat = 'all';
+  let currentPlayer = 0;
+  let scores = [];
+  let flipped = [];
+  let matched = [];
+  let moves = 0;
+  let locked = false;
+  let gameCards = [];
+
+  // ── START SCREEN ──
+  document.querySelectorAll('.pc-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      numPlayers = parseInt(btn.dataset.n);
+      document.getElementById('start-btn').classList.add('ready');
+    });
+  });
+
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCat = btn.dataset.cat;
+    });
+  });
+
+  document.getElementById('start-btn').addEventListener('click', () => {
+    if (!numPlayers) return;
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'flex';
+    startGame();
+  });
+
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('win-screen').style.display = 'none';
+    document.getElementById('start-screen').style.display = 'flex';
+    // reset selection
+    numPlayers = 0;
+    document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('start-btn').classList.remove('ready');
+  });
+
+  document.getElementById('play-again-btn').addEventListener('click', () => {
+    document.getElementById('win-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'flex';
+    startGame();
+  });
+
+  // ── GAME LOGIC ──
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function getPool(cat) {
+    if (cat === 'all') return [...CARDS.plants, ...CARDS.birds, ...CARDS.nature];
+    return CARDS[cat];
+  }
+
+  function startGame() {
+    flipped = [];
+    matched = [];
+    moves = 0;
+    locked = false;
+    currentPlayer = 0;
+    scores = Array(numPlayers).fill(0);
+
+    document.getElementById('moves').textContent = 0;
+    document.getElementById('pairs').textContent = 0;
+    document.getElementById('message').textContent = '';
+
+    const pool = shuffle(getPool(currentCat));
+    const picked = pool.slice(0, 10); // 10 pairs = 20 cards
+    gameCards = shuffle([...picked, ...picked.map(c => ({ ...c }))]);
+
+    renderPlayersBar();
+    updateTurnMsg();
+    renderGrid();
+  }
+
+  function renderPlayersBar() {
+    const bar = document.getElementById('players-bar');
+    bar.innerHTML = '';
+    for (let i = 0; i < numPlayers; i++) {
+      const div = document.createElement('div');
+      div.className = 'player-card' + (i === currentPlayer ? ' active' : '');
+      div.id = `player-card-${i}`;
+      div.innerHTML = `
+        <div class="p-name">${PLAYER_COLORS[i]} ${PLAYER_NAMES[i]}</div>
+        <div class="p-score" id="score-${i}">0</div>`;
+      bar.appendChild(div);
+    }
+  }
+
+  function updateTurnMsg() {
+    if (numPlayers === 1) {
+      document.getElementById('turn-msg').textContent = 'תורך!';
+    } else {
+      document.getElementById('turn-msg').textContent =
+        `תור: ${PLAYER_COLORS[currentPlayer]} ${PLAYER_NAMES[currentPlayer]}`;
+    }
+  }
+
+  function highlightCurrentPlayer() {
+    for (let i = 0; i < numPlayers; i++) {
+      const el = document.getElementById(`player-card-${i}`);
+      if (el) el.classList.toggle('active', i === currentPlayer);
+    }
+    updateTurnMsg();
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('grid');
+    grid.style.gridTemplateColumns = 'repeat(5, 85px)';
+    grid.innerHTML = '';
+
+    gameCards.forEach((card, idx) => {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.dataset.idx = idx;
+      el.innerHTML = `
+        <div class="card-inner">
+          <div class="card-front"></div>
+          <div class="card-back" title="${card.name}">${card.emoji}</div>
+        </div>`;
+      el.addEventListener('click', () => onCardClick(el, idx));
+      grid.appendChild(el);
+    });
+  }
+
+  function onCardClick(el, idx) {
+    if (locked) return;
+    if (flipped.includes(idx)) return;
+    if (matched.includes(idx)) return;
+
+    el.classList.add('flipped');
+    flipped.push(idx);
+
+    if (flipped.length === 2) {
+      locked = true;
+      moves++;
+      document.getElementById('moves').textContent = moves;
+      checkMatch();
+    }
+  }
+
+  function checkMatch() {
+    const [i1, i2] = flipped;
+    const c1 = gameCards[i1];
+    const c2 = gameCards[i2];
+
+    if (c1.emoji === c2.emoji) {
+      matched.push(i1, i2);
+      document.querySelectorAll(`.card[data-idx="${i1}"], .card[data-idx="${i2}"]`)
+        .forEach(el => el.classList.add('matched'));
+
+      scores[currentPlayer]++;
+      document.getElementById(`score-${currentPlayer}`).textContent = scores[currentPlayer];
+      document.getElementById('pairs').textContent = matched.length / 2;
+
+      flipped = [];
+      locked = false;
+
+      if (matched.length === gameCards.length) {
+        setTimeout(showWinScreen, 500);
+      } else {
+        // same player continues on match
+        document.getElementById('message').textContent = '✅ כל הכבוד! המשך!';
+        setTimeout(() => { document.getElementById('message').textContent = ''; }, 1000);
+      }
+    } else {
+      setTimeout(() => {
+        document.querySelectorAll(`.card[data-idx="${i1}"], .card[data-idx="${i2}"]`)
+          .forEach(el => el.classList.remove('flipped'));
+        flipped = [];
+        locked = false;
+
+        // next player on miss
+        currentPlayer = (currentPlayer + 1) % numPlayers;
+        highlightCurrentPlayer();
+      }, 900);
+    }
+  }
+
+  function showWinScreen() {
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('win-screen').style.display = 'flex';
+
+    const maxScore = Math.max(...scores);
+    const fs = document.getElementById('final-scores');
+    fs.innerHTML = '';
+
+    scores.forEach((score, i) => {
+      const isWinner = score === maxScore;
+      const div = document.createElement('div');
+      div.className = 'final-player' + (isWinner ? ' winner' : '');
+      div.innerHTML = `
+        ${isWinner ? '<div class="fp-crown">👑</div>' : ''}
+        <div class="fp-name">${PLAYER_COLORS[i]} ${PLAYER_NAMES[i]}</div>
+        <div class="fp-score">${score}</div>
+        <div style="font-size:0.8rem;opacity:0.7">זוגות</div>`;
+      fs.appendChild(div);
+    });
+
+    // If single player, add moves info
+    if (numPlayers === 1) {
+      const info = document.createElement('div');
+      info.style.cssText = 'text-align:center;font-size:1rem;opacity:0.8;';
+      info.textContent = `סיימת ב-${moves} מהלכים!`;
+      document.getElementById('win-screen').insertBefore(info, document.getElementById('play-again-btn'));
+    }
+  }
+</script>
+</body>
+</html>
